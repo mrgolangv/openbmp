@@ -1,0 +1,598 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "action"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 74
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 299
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select ts, action,name,ip_addr,term_reason_code, term_reason_text from bmp.raw_router where ip_addr in (select distinct ip_addr from bmp.raw_router where action = 'term')",
+          "rawQuery": "select ts, action,name,ip_addr,term_reason_code, term_reason_text from bmp.raw_router where ip_addr in (select distinct ip_addr from bmp.raw_router where action = 'term')",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Flapped router",
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "graph": false,
+              "legend": false,
+              "tooltip": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltipOptions": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n\n    (intDiv(toUInt32(toStartOfInterval(ts, toIntervalSecond(1))), 1) * 1) * 1000 as t,\n    ip_addr,\n    toInt8(CAST(action, 'Enum(\\'init\\' = 1, \\'term\\' = 0)') as int8) as state\nFROM bmp.raw_router\n\nWHERE ip_addr in (\n    SELECT distinct ip_addr\n\n    FROM bmp.raw_router\n\n    WHERE action = 'term'\n)\n\ngroup by t, ip_addr, action\norder by t",
+          "rawQuery": "SELECT\n\n    (intDiv(toUInt32(toStartOfInterval(ts, toIntervalSecond(1))), 1) * 1) * 1000 as t,\n    ip_addr,\n    toInt8(CAST(action, 'Enum(\\'init\\' = 1, \\'term\\' = 0)') as int8) as state\nFROM bmp.raw_router\n\nWHERE ip_addr in (\n    SELECT distinct ip_addr\n\n    FROM bmp.raw_router\n\n    WHERE action = 'term'\n)\n\ngroup by t, ip_addr, action\norder by t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": false,
+          "table": "raw_router",
+          "tableLoading": false
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Flapped router",
+      "type": "timeseries"
+    },
+    {
+      "aliasColors": {
+        "del, 2": "rgb(144, 16, 31)"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "decimals": null,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "connected",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:327",
+          "alias": "/del/",
+          "color": "#C4162A",
+          "transform": "negative-Y"
+        },
+        {
+          "$$hashKey": "object:678",
+          "alias": "/add/",
+          "color": "rgb(28, 145, 62)"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    toStartOfInterval(ts + 3600*3, toIntervalMinute(1)) as t,\n    type,\n    router_ip,\n    count(type)\nFROM bmp.raw_evpn_rmt\n\nWHERE\n    $timeFilter \nGROUP BY\n    t,\n    router_ip,\n    type\nORDER BY\n    t,\n    router_ip,\n    type",
+          "rawQuery": "SELECT\n    toStartOfInterval(ts + 3600*3, toIntervalMinute(1)) as t,\n    type,\n    router_ip,\n    count(type)\nFROM bmp.raw_evpn_rmt\n\nWHERE\n    ts >= toDateTime(1618723783) \nGROUP BY\n    t,\n    router_ip,\n    type\nORDER BY\n    t,\n    router_ip,\n    type",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "EVPN Changes",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:282",
+          "format": "short",
+          "label": "prefix",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:283",
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": true,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "decimals": null,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "hiddenSeries": false,
+      "id": 3,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "connected",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:327",
+          "alias": "del",
+          "color": "#C4162A",
+          "transform": "negative-Y"
+        },
+        {
+          "$$hashKey": "object:678",
+          "alias": "add",
+          "color": "rgb(28, 145, 62)"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    (intDiv(toUInt32(toStartOfInterval(ts, toIntervalMinute(1))), 5) * 5) * 1000 as t,\n    action,\n    count(action)\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t, action\nORDER BY t, action\n",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(toStartOfInterval(ts, toIntervalMinute(1))), 5) * 5) * 1000 as t,\n    action,\n    count(action)\nFROM bmp.raw_l3vpn\n\nWHERE ts >= toDateTime(1618702015)\n\nGROUP BY t, action\nORDER BY t, action",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_l3vpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "L3VPN Changes",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:282",
+          "format": "short",
+          "label": "prefix",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:283",
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": true,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "decimals": null,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "connected",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:327",
+          "alias": "del",
+          "color": "#C4162A",
+          "transform": "negative-Y"
+        },
+        {
+          "$$hashKey": "object:678",
+          "alias": "add",
+          "color": "rgb(28, 145, 62)"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    (intDiv(toUInt32(toStartOfInterval(ts, toIntervalMinute(5))), 5) * 5) * 1000 as t,\n    action,\n    count(action)\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t, action\nORDER BY t, action\n",
+          "rawQuery": false,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_unicast_prefix",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Unicast Changes",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:282",
+          "format": "short",
+          "label": "prefix",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:283",
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": true,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-12h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "BMP_CLICKHOUSE",
+  "uid": "1Lo1SLXMz",
+  "version": 6
+}

@@ -1,0 +1,773 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "sort": "max",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    count(type) as metric,\n    rr.name as name\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE $timeFilter and type = 'del'\n  group by t, name\n  order by t, name",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(ts), 2) * 2) * 1000 as t,\n    count(type) as metric,\n    rr.name as name\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE ts >= toDateTime(1618760702) and type = 'del'\n  group by t, name\n  order by t, name",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Withdraws  By Router [EVPN]",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:4954",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:4955",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 3,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    count(type) as metric,\n    rr.name as name\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE $timeFilter and type = 'add'\n  group by t, name\n  order by t, name",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(ts), 2) * 2) * 1000 as t,\n    count(type) as metric,\n    rr.name as name\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE ts >= toDateTime(1618760720) and type = 'add'\n  group by t, name\n  order by t, name",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Updates  By Router [EVPN]",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:4954",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:4955",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    count(type) as metric,\n    rr.name as name,\n    peer_addr\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE $timeFilter and type = 'del'\n  group by t, name, peer_addr\n  order by t, name, peer_addr",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(ts), 2) * 2) * 1000 as t,\n    count(type) as metric,\n    rr.name as name,\n    peer_addr\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE ts >= toDateTime(1618760744) and type = 'del'\n  group by t, name, peer_addr\n  order by t, name, peer_addr",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Withdraws  By Peer [EVPN]",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:4954",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:4955",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "id": 5,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    count(type) as metric,\n    rr.name as name,\n    peer_addr\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE $timeFilter and type = 'add'\n  group by t, name, peer_addr\n  order by t, name, peer_addr",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(ts), 2) * 2) * 1000 as t,\n    count(type) as metric,\n    rr.name as name,\n    peer_addr\n  FROM bmp.raw_evpn_rmt ri\n  JOIN raw_router rr ON ri.router_ip = rr.ip_addr\n  WHERE ts >= toDateTime(1618760732) and type = 'add'\n  group by t, name, peer_addr\n  order by t, name, peer_addr",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Updates  By Peer [EVPN]",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:4954",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:4955",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 6,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 15
+        }
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT t, groupArray((ip, c)) AS groupArr\nFROM (SELECT count(type) as c, $timeSeries as t, ip\n      FROM raw_evpn_rmt\n      WHERE $timeFilter\n        and type = 'add' and ip != ''\n      GROUP BY type, ip, t order by c desc, ip limit 50)\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT t, groupArray((ip, c)) AS groupArr\nFROM (SELECT count(type) as c, (intDiv(toUInt32(ts), 2) * 2) * 1000 as t, ip\n      FROM raw_evpn_rmt\n      WHERE ts >= toDateTime(1618760759)\n        and type = 'add' and ip != ''\n      GROUP BY type, ip, t order by c desc, ip limit 50)\nGROUP BY t\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top Updates by Prefix [EVPN]",
+      "transformations": [],
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 7,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 13,
+          "valueSize": 15
+        }
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT t, groupArray((ip, c)) AS groupArr\nFROM (SELECT count(type) as c, $timeSeries as t, ip\n      FROM raw_evpn_rmt\n      WHERE $timeFilter\n        and type = 'del' and ip != ''\n      GROUP BY type, ip, t order by c desc, ip limit 150)\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT t, groupArray((ip, c)) AS groupArr\nFROM (SELECT count(type) as c, (intDiv(toUInt32(ts), 2) * 2) * 1000 as t, ip\n      FROM raw_evpn_rmt\n      WHERE ts >= toDateTime(1618760767)\n        and type = 'del' and ip != ''\n      GROUP BY type, ip, t order by c desc, ip limit 150)\nGROUP BY t\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top Withdraws by Prefix [EVPN]",
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "id": 8,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 15
+        }
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT t, groupArray((mac, c)) AS groupArr\nFROM (SELECT count(type) as c, $timeSeries as t, mac\n      FROM raw_evpn_rmt\n      WHERE $timeFilter\n        and type = 'add' and mac != ''\n      GROUP BY type, mac, t order by c desc, mac limit 20)\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT t, groupArray((mac, c)) AS groupArr\nFROM (SELECT count(type) as c, (intDiv(toUInt32(ts), 2) * 2) * 1000 as t, mac\n      FROM raw_evpn_rmt\n      WHERE ts >= toDateTime(1618760779)\n        and type = 'add' and mac != ''\n      GROUP BY type, mac, t order by c desc, mac limit 20)\nGROUP BY t\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top Updates by Mac [EVPN]",
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 15
+        }
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "database": "bmp",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "ts",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT t, groupArray((mac, c)) AS groupArr\nFROM (SELECT count(type) as c, $timeSeries as t, mac\n      FROM raw_evpn_rmt\n      WHERE $timeFilter\n        and type = 'del' and mac != ''\n      GROUP BY type, mac, t order by c desc, mac limit 30)\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT t, groupArray((mac, c)) AS groupArr\nFROM (SELECT count(type) as c, (intDiv(toUInt32(ts), 2) * 2) * 1000 as t, mac\n      FROM raw_evpn_rmt\n      WHERE ts >= toDateTime(1618760789)\n        and type = 'del' and mac != ''\n      GROUP BY type, mac, t order by c desc, mac limit 30)\nGROUP BY t\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "raw_evpn",
+          "tableLoading": false
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Top Withdraws by Mac [EVPN]",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2021-04-18T06:31:01.276Z",
+    "to": "2021-04-18T08:19:06.755Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Top by Prefix",
+  "uid": "SLwyNLXMk",
+  "version": 8
+}
