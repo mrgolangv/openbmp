@@ -391,21 +391,24 @@ void msgBus_kafka::produce(const char *topic_var, char *msg, size_t msg_size, in
         return;
 
     char headers[256];
+
     len = snprintf(headers, sizeof(headers), "V: %s\nC_HASH_ID: %s\nT: %s\nL: %lu\nR: %d\n\n",
-            MSGBUS_API_VERSION, collector_hash.c_str(), topic_var, msg_size, rows);
-
-    memcpy(producer_buf, headers, len);
-    memcpy(producer_buf+len, msg, msg_size);
-
-
+                   MSGBUS_API_VERSION, collector_hash.c_str(), topic_var, msg_size, rows);
+//    memcpy(producer_buf, headers, len);
+//    memcpy(producer_buf+len, msg, msg_size);
+    memcpy(producer_buf, msg, msg_size);
     topic = topicSel->getTopic(topic_var, &router_group_name, peer_group, peer_asn);
     if (topic != NULL) {
         SELF_DEBUG("rtr=%s: Producing message: topic=%s key=%s, msg size = %lu", router_ip.c_str(),
                    topic->name().c_str(), key.c_str(), msg_size);
 
+//        RdKafka::ErrorCode resp = producer->produce(topic, RdKafka::Topic::PARTITION_UA,
+//                                                    RdKafka::Producer::RK_MSG_COPY,
+//                                                    producer_buf, msg_size + len,
+//                                                    (const std::string *) &key, NULL);
         RdKafka::ErrorCode resp = producer->produce(topic, RdKafka::Topic::PARTITION_UA,
                                                     RdKafka::Producer::RK_MSG_COPY,
-                                                    producer_buf, msg_size + len,
+                                                    producer_buf, msg_size,
                                                     (const std::string *) &key, NULL);
         if (resp != RdKafka::ERR_NO_ERROR) {
             LOG_ERR("rtr=%s: Failed to produce message: %s", router_ip.c_str(), RdKafka::err2str(resp).c_str());
@@ -640,7 +643,7 @@ void msgBus_kafka::update_Peer(obj_bgp_peer &peer, obj_peer_up_event *up, obj_pe
 
             snprintf(buf, sizeof(buf),
                      "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%" PRIu16 "\t%" PRIu32 "\t%s\t%" PRIu16
-                             "\t%s\t%s\t%s\t%s\t%" PRIu16 "\t%" PRIu16 "\t\t\t\t\t%d\t%d\t%d\t%d\t%d\t%s\n",
+                     "\t%s\t%s\t%s\t%s\t%" PRIu16 "\t%" PRIu16 "\t\t\t\t\t%d\t%d\t%d\t%d\t%d\t%s\n",
                      action.c_str(), peer_seq, p_hash_str.c_str(), r_hash_str.c_str(), hostname.c_str(),
                      peer.peer_bgp_id, router_ip.c_str(), ts.c_str(), peer.peer_as, peer.peer_addr, peer.peer_rd,
 
@@ -658,7 +661,7 @@ void msgBus_kafka::update_Peer(obj_bgp_peer &peer, obj_peer_up_event *up, obj_pe
                 return;
 
             snprintf(buf, sizeof(buf),
-                     "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t\t\t\t\t\t\t\t\t\t\t%d\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t\n",
+                     "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t\t\t\t\t\t\t\t\t\t\t%d\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\n",
                      action.c_str(), peer_seq, p_hash_str.c_str(), r_hash_str.c_str(), hostname.c_str(),
                      peer.peer_bgp_id, router_ip.c_str(), ts.c_str(), peer.peer_as, peer.peer_addr, peer.peer_rd,
 
@@ -679,7 +682,6 @@ void msgBus_kafka::update_Peer(obj_bgp_peer &peer, obj_peer_up_event *up, obj_pe
     }
 
     produce(MSGBUS_TOPIC_VAR_PEER, buf, strlen(buf), 1, p_hash_str, &peer_list[p_hash_str], peer.peer_as);
-
     peer_seq++;
 }
 
@@ -732,7 +734,7 @@ void msgBus_kafka::update_baseAttribute(obj_bgp_peer &peer, obj_path_attr &attr,
     buf_len =
             snprintf(prep_buf, MSGBUS_WORKING_BUF_SIZE,
                      "add\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIu16 "\t%" PRIu32
-                             "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%s\n",
+                     "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%s\n",
                      base_attr_seq, path_hash_str.c_str(), r_hash_str.c_str(), router_ip.c_str(), p_hash_str.c_str(),
                      peer.peer_addr,peer.peer_as, ts.c_str(),
                      attr.origin, attr.as_path.c_str(), attr.as_path_count, attr.origin_as, attr.next_hop, attr.med,
@@ -817,9 +819,9 @@ void msgBus_kafka::update_L3Vpn(obj_bgp_peer &peer, std::vector<obj_vpn> &vpn,
                     return;
 
                 buf_len += snprintf(buf2, sizeof(buf2),
-                                    "add\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%d\t%d\t%s\t%s\t%" PRIu16
-                                            "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%" PRIu32
-                                            "\t%s\t%d\t%d\t%s:%s\t%d\t%s\n",
+                                    "add,%" PRIu64 ",%s,%s,%s,%s,%s,%s,%" PRIu32 ",%s,%s,%d,%d,%s,%s,%" PRIu16
+                                    ",%" PRIu32 ",%s,%" PRIu32 ",%" PRIu32 ",%s,%s,%s,%s,%d,%d,%s,%" PRIu32
+                                    ",%s,%d,%d,%s:%s,%d,%s\n",
                                     l3vpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(), vpn[i].prefix, vpn[i].prefix_len,
@@ -836,9 +838,7 @@ void msgBus_kafka::update_L3Vpn(obj_bgp_peer &peer, std::vector<obj_vpn> &vpn,
 
             case VPN_ACTION_DEL:
                 buf_len += snprintf(buf2, sizeof(buf2),
-                                    "del\t%" PRIu64 "\t%s\t%s\t%s\t\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%d\t%d\t\t\t"
-                                            "\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32
-                                            "\t%s\t%d\t%d\t%s:%s\t%d\t\n",
+                                    "del,%" PRIu64 ",%s,%s,%s,,%s,%s,%" PRIu32 ",%s,%s,%d,%d,,,,,,,,,,,,,,,%" PRIu32 ",%s,%d,%d,%s:%s,%d,,\n",
                                     l3vpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(), vpn[i].prefix, vpn[i].prefix_len,
@@ -855,7 +855,7 @@ void msgBus_kafka::update_L3Vpn(obj_bgp_peer &peer, std::vector<obj_vpn> &vpn,
 
         ++l3vpn_seq;
     }
-
+//    LOG_INFO("%s",prep_buf);
     produce(MSGBUS_TOPIC_VAR_L3VPN, prep_buf, strlen(prep_buf), vpn.size(), p_hash_str,
             &peer_list[p_hash_str], peer.peer_as);
 }
@@ -925,9 +925,25 @@ void msgBus_kafka::update_eVPN(obj_bgp_peer &peer, std::vector<obj_evpn> &vpn,
                     return;
 
                 buf_len += snprintf(buf2, sizeof(buf2),
+//                                    "add\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIu16
+//                                    "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%s\t%" PRIu32
+//                                    "\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%d\n",
+//                                    evpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
+//                                    router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
+//                                    peer.peer_addr, peer.peer_as, ts.c_str(),
+//                                    attr->origin,
+//                                    attr->as_path.c_str(), attr->as_path_count, attr->origin_as, attr->next_hop, attr->med, attr->local_pref,
+//                                    attr->aggregator,
+//                                    attr->community_list.c_str(), attr->ext_community_list.c_str(), attr->cluster_list.c_str(),
+//                                    attr->atomic_agg, attr->nexthop_isIPv4,
+//                                    attr->originator_id, vpn[i].path_id, peer.isPrePolicy, peer.isAdjIn,
+//                                    vpn[i].rd_administrator_subfield.c_str(), vpn[i].rd_assigned_number.c_str(), vpn[i].rd_type,
+//                                    vpn[i].originating_router_ip_len, vpn[i].originating_router_ip, vpn[i].ethernet_tag_id_hex,
+//                                    vpn[i].ethernet_segment_identifier, vpn[i].mac_len,
+//                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].gateway, vpn[i].mpls_label_1, vpn[i].mpls_label_2, vpn[i].route_type);
                                     "add\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIu16
-                                        "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%" PRIu32
-                                        "\t%d\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%" PRIu32 "\t%" PRIu32 "\n",
+                                    "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%" PRIu32
+                                    "\t%d\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%d\n",
                                     evpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(),
@@ -940,15 +956,27 @@ void msgBus_kafka::update_eVPN(obj_bgp_peer &peer, std::vector<obj_evpn> &vpn,
                                     vpn[i].rd_administrator_subfield.c_str(), vpn[i].rd_assigned_number.c_str(), vpn[i].rd_type,
                                     vpn[i].originating_router_ip_len, vpn[i].originating_router_ip, vpn[i].ethernet_tag_id_hex,
                                     vpn[i].ethernet_segment_identifier, vpn[i].mac_len,
-                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].mpls_label_1, vpn[i].mpls_label_2);
+                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].gateway,vpn[i].mpls_label_1, vpn[i].mpls_label_2, vpn[i].route_type);
+
 
                 break;
 
             case VPN_ACTION_DEL:
                 buf_len += snprintf(buf2, sizeof(buf2),
+//                                    "del\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32 "\t%d\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%d\n",
+//                                    "del\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32
+//                                            "\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%d\n",
+//                                    evpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
+//                                    router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
+//                                    peer.peer_addr, peer.peer_as, ts.c_str(),
+//                                    vpn[i].path_id, peer.isPrePolicy, peer.isAdjIn,
+//                                    vpn[i].rd_administrator_subfield.c_str(), vpn[i].rd_assigned_number.c_str(), vpn[i].rd_type,
+//                                    vpn[i].originating_router_ip_len, vpn[i].originating_router_ip, vpn[i].ethernet_tag_id_hex,
+//                                    vpn[i].ethernet_segment_identifier, vpn[i].mac_len,
+//                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].gateway, vpn[i].mpls_label_1, vpn[i].mpls_label_2, vpn[i].route_type);
                                     "del\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t\t\t"
-                                            "\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32
-                                            "\t%d\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%" PRIu32 "\t%" PRIu32 "\n",
+                                    "\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32
+                                    "\t%d\t%d\t%s:%s\t%d\t%d\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%d\n",
                                     evpn_seq, vpn_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(),
@@ -956,7 +984,7 @@ void msgBus_kafka::update_eVPN(obj_bgp_peer &peer, std::vector<obj_evpn> &vpn,
                                     vpn[i].rd_administrator_subfield.c_str(), vpn[i].rd_assigned_number.c_str(), vpn[i].rd_type,
                                     vpn[i].originating_router_ip_len, vpn[i].originating_router_ip, vpn[i].ethernet_tag_id_hex,
                                     vpn[i].ethernet_segment_identifier, vpn[i].mac_len,
-                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].mpls_label_1, vpn[i].mpls_label_2);
+                                    vpn[i].mac, vpn[i].ip_len, vpn[i].ip, vpn[i].gateway,vpn[i].mpls_label_1, vpn[i].mpls_label_2, vpn[i].route_type);
 
                 break;
 
@@ -1053,8 +1081,8 @@ void msgBus_kafka::update_unicastPrefix(obj_bgp_peer &peer, std::vector<obj_rib>
 
                 buf_len += snprintf(buf2, sizeof(buf2),
                                     "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%d\t%d\t%s\t%s\t%" PRIu16
-                                            "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%" PRIu32
-                                            "\t%s\t%d\t%d\t%s\n",
+                                    "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%d\t%d\t%s\t%" PRIu32
+                                    "\t%s\t%d\t%d\t%s\n",
                                     action.c_str(), unicast_prefix_seq, rib_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(),path_hash_str.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(), rib[i].prefix, rib[i].prefix_len,
@@ -1070,7 +1098,7 @@ void msgBus_kafka::update_unicastPrefix(obj_bgp_peer &peer, std::vector<obj_rib>
             case UNICAST_PREFIX_ACTION_DEL:
                 buf_len += snprintf(buf2, sizeof(buf2),
                                     "%s\t%" PRIu64 "\t%s\t%s\t%s\t\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%d\t%d\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%" PRIu32
-                                            "\t%s\t%d\t%d\t\n",
+                                    "\t%s\t%d\t%d\t\n",
                                     action.c_str(), unicast_prefix_seq, rib_hash_str.c_str(), r_hash_str.c_str(),
                                     router_ip.c_str(), p_hash_str.c_str(),
                                     peer.peer_addr, peer.peer_as, ts.c_str(), rib[i].prefix, rib[i].prefix_len,
@@ -1108,7 +1136,7 @@ void msgBus_kafka::add_StatReport(obj_bgp_peer &peer, obj_stats_report &stats) {
 
     snprintf(buf, sizeof(buf),
              "add\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%" PRIu32 "\t%" PRIu32 "\t%" PRIu32 "\t%" PRIu32 "\t%" PRIu32
-                     "\t%" PRIu32 "\t%" PRIu32 "\t%" PRIu64 "\t%" PRIu64 "\n",
+             "\t%" PRIu32 "\t%" PRIu32 "\t%" PRIu64 "\t%" PRIu64 "\n",
              bmp_stat_seq, r_hash_str.c_str(), router_ip.c_str(),p_hash_str.c_str(), peer.peer_addr, peer.peer_as, ts.c_str(),
              stats.prefixes_rej,stats.known_dup_prefixes, stats.known_dup_withdraws, stats.invalid_cluster_list,
              stats.invalid_as_path_loop, stats.invalid_originator_id, stats.invalid_as_confed_loop,
@@ -1213,8 +1241,8 @@ void msgBus_kafka::update_LsNode(obj_bgp_peer &peer, obj_path_attr &attr, std::l
         }
 
         buf_len += snprintf(buf2, sizeof(buf2),
-                        "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32 "\t%s"
-                                "\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%d\t%d\t%s\n",
+                            "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32 "\t%s"
+                            "\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%d\t%d\t%s\n",
                         action.c_str(),ls_node_seq, hash_str.c_str(),path_hash_str.c_str(), r_hash_str.c_str(),
                         router_ip.c_str(), peer_hash_str.c_str(), peer.peer_addr, peer.peer_as, ts.c_str(),
                         igp_router_id, router_id, node.id, node.bgp_ls_id,node.mt_id, ospf_area_id, isis_area_id,
@@ -1375,10 +1403,10 @@ void msgBus_kafka::update_LsLink(obj_bgp_peer &peer, obj_path_attr &attr, std::l
 
 
         buf_len += snprintf(buf2, sizeof(buf2),
-                "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32 "\t%s\t%s\t%s\t%s\t%"
-                        PRIu32 "\t%" PRIu32 "\t%s\t%" PRIx32 "\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%" PRIu32 "\t%" PRIu32
-                        "\t%" PRIu32 "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 ""
-                        "\t%" PRIu32 "\t%s\t%d\t%d\t%s\n",
+                            "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32 "\t%s\t%s\t%s\t%s\t%"
+                            PRIu32 "\t%" PRIu32 "\t%s\t%" PRIx32 "\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%" PRIu32 "\t%" PRIu32
+                            "\t%" PRIu32 "\t%" PRIu32 "\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 ""
+                            "\t%" PRIu32 "\t%s\t%d\t%d\t%s\n",
                             action.c_str(), ls_link_seq, hash_str.c_str(), path_hash_str.c_str(),r_hash_str.c_str(),
                             router_ip.c_str(), peer_hash_str.c_str(), peer.peer_addr, peer.peer_as, ts.c_str(),
                             igp_router_id, router_id, link.id, link.bgp_ls_id, ospf_area_id,
@@ -1521,8 +1549,8 @@ void msgBus_kafka::update_LsPrefix(obj_bgp_peer &peer, obj_path_attr &attr, std:
 
 
         buf_len += snprintf(buf2, sizeof(buf2),
-                "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32
-                        "\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%" PRIx32 "\t%s\t%s\t%" PRIu32 "\t%" PRIx64
+                            "%s\t%" PRIu64 "\t%s\t%s\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%s\t%s\t%s\t%" PRIx64 "\t%" PRIx32
+                            "\t%s\t%s\t%s\t%s\t%" PRIu32 "\t%" PRIu32 "\t%s\t%s\t%" PRIx32 "\t%s\t%s\t%" PRIu32 "\t%" PRIx64
                             "\t%s\t%" PRIu32 "\t%s\t%d\t%d\t%d\t%s\n",
                             action.c_str(), ls_prefix_seq, hash_str.c_str(), path_hash_str.c_str(), r_hash_str.c_str(),
                             router_ip.c_str(), peer_hash_str.c_str(), peer.peer_addr, peer.peer_as, ts.c_str(),

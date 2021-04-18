@@ -153,10 +153,12 @@ namespace bgp {
         std::string     mac;
         uint8_t         ip_len;
         std::string     ip;
+        std::string     gateway;
         int             mpls_label_1;
         int             mpls_label_2;
         uint8_t         originating_router_ip_len;
         std::string     originating_router_ip;
+        int             route_type;
     };
 
     /*********************************************************************//**

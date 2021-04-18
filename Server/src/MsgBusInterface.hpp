@@ -260,8 +260,10 @@ public:
         char        mac[255];
         uint8_t     ip_len;
         char        ip[46];
+        char        gateway[46];
         int         mpls_label_1;
         int         mpls_label_2;
+        int         route_type;
     };
 
     /// Unicast prefix action codes

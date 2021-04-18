@@ -594,7 +594,9 @@ void parseBGP::UpdateDBeVPN(bool remove, std::list<bgp::evpn_tuple> &nlris,
         strcpy(rib_entry.mac, tuple.mac.c_str());
         rib_entry.ip_len = tuple.ip_len;
         strcpy(rib_entry.ip, tuple.ip.c_str());
+        strcpy(rib_entry.gateway, tuple.gateway.c_str());
         rib_entry.mpls_label_2 = tuple.mpls_label_2;
+        rib_entry.route_type = tuple.route_type;
         rib_entry.originating_router_ip_len = tuple.originating_router_ip_len;
         strcpy(rib_entry.originating_router_ip, tuple.originating_router_ip.c_str());
         strcpy(rib_entry.ethernet_segment_identifier, tuple.ethernet_segment_identifier.c_str());

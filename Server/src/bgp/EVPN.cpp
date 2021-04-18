@@ -258,10 +258,10 @@ namespace bgp_msg {
         int         addr_bytes;
         char        ip_char[40];
         int         data_read = 0;
-
+//        LOG_INFO("%s: START WHILE, %u: data_pointer ", peer_addr.c_str(), data_pointer);
         while ((data_read + 10 /* min read */) < data_len) {
             bgp::evpn_tuple tuple;
-
+//            LOG_INFO("%d: DATA POINTER, %u: address pt", *data_pointer, data_pointer);
             //Cleanup variables in case of not modified
             tuple.mpls_label_1 = 0;
             tuple.mpls_label_2 = 0;
@@ -291,8 +291,17 @@ namespace bgp_msg {
             len -= 8; // len doesn't include the route type and len octets
 
             switch (route_type) {
+//                case 0: {
+//                    LOG_INFO("LEN: %u", len);
+//                    for (int i=0; i<len; i++){
+//                        LOG_INFO("RT 0, DP: %d\n", *data_pointer);
+//                        data_pointer++;
+//                    }
+//                    data_read += len;
+//                    break;
+//                }
                 case EVPN_ROUTE_TYPE_ETHERNET_AUTO_DISCOVERY: {
-
+                    tuple.route_type = route_type;
                     if ((data_read + 17 /* expected read size */) <= data_len) {
 
                         // Ethernet Segment Identifier (10 bytes)
@@ -326,7 +335,7 @@ namespace bgp_msg {
                     break;
                 }
                 case EVPN_ROUTE_TYPE_MAC_IP_ADVERTISMENT: {
-
+                    tuple.route_type = route_type;
                     if ((data_read + 25 /* expected read size */) <= data_len) {
 
                         // Ethernet Segment Identifier (10 bytes)
@@ -395,8 +404,6 @@ namespace bgp_msg {
 
                         // Parse second label if present
                         if (len == 3) {
-                            SELF_DEBUG("%s: parsing second evpn label\n", peer_addr.c_str());
-
                             memcpy(&tuple.mpls_label_2, data_pointer, 3);
                             bgp::SWAP_BYTES(&tuple.mpls_label_2);
                             tuple.mpls_label_2 >>= 8;
@@ -409,7 +416,7 @@ namespace bgp_msg {
                     break;
                 }
                 case EVPN_ROUTE_TYPE_INCLUSIVE_MULTICAST_ETHERNET_TAG: {
-
+                    tuple.route_type = route_type;
                     if ((data_read + 5 /* expected read size */) <= data_len) {
 
                         // Ethernet Tag ID (4 bytes)
@@ -455,7 +462,7 @@ namespace bgp_msg {
                     break;
                 }
                 case EVPN_ROUTE_TYPE_ETHERNET_SEGMENT_ROUTE: {
-
+                    tuple.route_type = route_type;
                     if ((data_read + 11 /* expected read size */) <= data_len) {
 
                         // Ethernet Segment Identifier (10 bytes)
@@ -489,6 +496,76 @@ namespace bgp_msg {
 
                     break;
                 }
+                case EVPN_ROUTE_TYPE_ETHERNET_IP_PREFIX_ROUTE: {
+//                    data_pointer += len;
+//                    data_read += len;
+                    tuple.route_type = route_type;
+                    if ((data_read + 26 /* expected read size */) <= data_len) {
+                        // Ethernet Segment Identifier (10 bytes)
+                        parseEthernetSegmentIdentifier(data_pointer, &tuple.ethernet_segment_identifier);
+                        data_pointer += 10;
+                        // Ethernet Tag ID (4 bytes)
+                        u_char ethernet_id[4];
+                        bzero(&ethernet_id, 4);
+                        memcpy(&ethernet_id, data_pointer, 4);
+                        data_pointer += 4;
+
+                        std::stringstream ethernet_tag_id_stream;
+                        for (int i = 0; i < 4; i++) {
+                            ethernet_tag_id_stream << std::hex << setfill('0') << setw(2) << (int) ethernet_id[i];
+                        }
+
+                        tuple.ethernet_tag_id_hex = ethernet_tag_id_stream.str();
+
+                        // IP Address Length (1 byte)
+                        tuple.ip_len = *data_pointer;
+                        data_pointer++;
+                        data_read += 15;
+                        len -= 15;
+                        addr_bytes = tuple.ip_len > 0 ? (tuple.ip_len / 8) : 0;
+                        int addr_size = tuple.ip_len > 32 ? 16 : 4;
+
+//                        if (tuple.ip_len > 0 and (addr_bytes + data_read) <= data_len) {
+                            // IP Address (0, 4, or 16 bytes)
+                        bzero(ip_binary, 16);
+                        memcpy(&ip_binary, data_pointer, addr_bytes);
+
+                        inet_ntop(tuple.ip_len > 32 ? AF_INET6 : AF_INET, ip_binary, ip_char, sizeof(ip_char));
+
+                        tuple.ip = ip_char;
+
+                        data_pointer += addr_size;
+                        data_read += addr_size;
+                        len -= addr_size;
+//                        }
+
+                        // IP Address (0, 4, or 16 bytes)
+
+                        bzero(ip_binary, 16);
+                        memcpy(&ip_binary, data_pointer, addr_bytes);
+                        inet_ntop(AF_INET, ip_binary, ip_char, sizeof(ip_char));
+                        tuple.gateway = ip_char;
+
+//                        if (tuple.gateway.c_str() != "0.0.0.0") {
+//                            LOG_INFO("GATEWAY : %s", tuple.gateway.c_str());
+//                        }
+                        data_pointer += addr_size;
+                        data_read += addr_size;
+                        len -= addr_size;
+
+                        if ((data_read + 3) <= data_len) {
+                            //MPLS Label1 (3 bytes)
+                            memcpy(&tuple.mpls_label_1, data_pointer, 3);
+                            bgp::SWAP_BYTES(&tuple.mpls_label_1);
+                            tuple.mpls_label_1 >>= 4;
+                            data_pointer += 3;
+                            data_read += 3;
+                            len -= 3;
+                        }
+                    }
+                    break;
+                }
+
                 default: {
                     LOG_INFO("%s: EVPN ROUTE TYPE %d is not implemented yet, skipping",
                              peer_addr.c_str(), route_type);
@@ -498,8 +575,10 @@ namespace bgp_msg {
 
             if (isUnreach)
                 parsed_data->evpn_withdrawn.push_back(tuple);
+
             else
                 parsed_data->evpn.push_back(tuple);
+//                LOG_INFO("route type: %d, prefix: %s, mac: %s, gateway: %s", tuple.route_type, tuple.ip.c_str(), tuple.mac.c_str(), tuple.gateway.c_str());
 
             SELF_DEBUG("%s: Processed evpn NLRI read %d of %d, nlri len %d", peer_addr.c_str(),
                        data_read, data_len, len);

@@ -378,7 +378,7 @@ void collector_update_msg(msgBus_kafka *kafka, Config &cfg,
     for (int i=0; i < thr_list.size(); i++) {
         //MsgBusInterface::hash_toStr(thr_list.at(i)->client.hash_id, hash_str);
         if (router_ips.size() > 0)
-            router_ips.append(", ");
+            router_ips.append("; ");
 
         router_ips.append(thr_list.at(i)->client.c_ip);
     }
